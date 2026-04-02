@@ -38,6 +38,67 @@
   .card-title { font-size: 22px; font-weight: 700; color: #1a1008; margin-bottom: 8px; }
   .card-sub { font-size: 14px; color: #7a6850; margin-bottom: 24px; }
 
+  /* MODE TOGGLE */
+  .mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: #f0ebe0;
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #9a8060;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .mode-btn.active {
+    background: #fff;
+    color: #1a1008;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  /* DRAFT MODE */
+  #draft-textarea {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1.5px solid #d8cbb8;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #1a1008;
+    resize: vertical;
+    font-family: inherit;
+    background: #fffdf8;
+    outline: none;
+    margin-bottom: 16px;
+    min-height: 220px;
+  }
+  #draft-textarea:focus { border-color: #c8a96e; }
+  .draft-hint {
+    background: #f0ebe0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #7a6850;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .draft-hint code {
+    font-family: monospace;
+    background: #e8dcc8;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
   /* API KEY SETUP */
   #apikey-wrap { display: none; }
   .apikey-icon { font-size: 48px; text-align: center; margin-bottom: 16px; }
@@ -237,6 +298,17 @@
   }
   .send-btn:active { background: #a08040; }
 
+  /* GENERATING */
+  #generating-wrap { display: none; }
+  .generating-inner {
+    text-align: center;
+    padding: 40px 0;
+  }
+  .generating-icon { font-size: 48px; margin-bottom: 16px; animation: spin 2s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .generating-text { font-size: 16px; font-weight: 600; color: #1a1008; margin-bottom: 8px; }
+  .generating-sub { font-size: 13px; color: #9a8060; }
+
   /* REVIEW */
   #review-wrap { display: none; }
   .review-header { text-align: center; margin-bottom: 20px; }
@@ -319,23 +391,49 @@
   <!-- UPLOAD -->
   <div id="upload-wrap" class="card fade-in">
     <div class="card-title">どの本のレビューを書く？</div>
-    <div class="card-sub">表紙写真を送るか、タイトルを入力してね</div>
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-      <div id="drop-placeholder">
-        <div class="drop-icon">📷</div>
-        <div class="drop-text">表紙写真をタップ</div>
-        <div class="drop-sub">または下にタイトルを入力</div>
-      </div>
-      <div id="compress-placeholder" style="display:none">
-        <div class="drop-icon">⏳</div>
-        <div class="drop-text">画像を処理中...</div>
-      </div>
-      <img id="preview-img" alt="cover">
-      <input type="file" id="file-input" accept="image/*" style="display:none">
+
+    <!-- モード切り替え -->
+    <div class="mode-toggle">
+      <button id="mode-chat-btn" class="mode-btn active" onclick="setMode('chat')">💬 対話モード</button>
+      <button id="mode-draft-btn" class="mode-btn" onclick="setMode('draft')">📝 下書きモード</button>
     </div>
-    <div class="divider"><span>または</span></div>
-    <input type="text" id="book-title-input" placeholder="本のタイトルを入力...">
-    <button class="start-btn" id="start-btn" onclick="startChat()">レビューを書き始める →</button>
+
+    <!-- 対話モード UI -->
+    <div id="chat-mode-ui">
+      <div class="card-sub">表紙写真を送るか、タイトルを入力してね</div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <div id="drop-placeholder">
+          <div class="drop-icon">📷</div>
+          <div class="drop-text">表紙写真をタップ</div>
+          <div class="drop-sub">または下にタイトルを入力</div>
+        </div>
+        <div id="compress-placeholder" style="display:none">
+          <div class="drop-icon">⏳</div>
+          <div class="drop-text">画像を処理中...</div>
+        </div>
+        <img id="preview-img" alt="cover">
+        <input type="file" id="file-input" accept="image/*" style="display:none">
+      </div>
+      <div class="divider"><span>または</span></div>
+      <input type="text" id="book-title-input" placeholder="本のタイトルを入力...">
+      <button class="start-btn" id="start-btn" onclick="startChat()">レビューを書き始める →</button>
+    </div>
+
+    <!-- 下書きモード UI -->
+    <div id="draft-mode-ui" style="display:none">
+      <div class="card-sub">Obsidianのメモをそのままペーストしてね</div>
+      <div class="draft-hint">
+        📋 フォーマット例：<br>
+        <code># 本のタイトル</code><br>
+        <code>著者：○○</code><br><br>
+        - 印象に残ったシーン<br>
+        - 感想のメモ ← コメントもOK<br>
+        - 誰に勧めたいか
+      </div>
+      <textarea id="draft-textarea" placeholder="# タイトル&#10;著者：○○&#10;&#10;- メモ1&#10;- メモ2 ← コメント&#10;- メモ3" oninput="updateDraftBtn()"></textarea>
+      <button class="start-btn" id="draft-btn" onclick="startDraftReview()">レビューを生成 →</button>
+    </div>
+
     <button class="change-key-btn" onclick="changeApiKey()">🔑 APIキーを変更</button>
   </div>
 
@@ -352,6 +450,15 @@
     <div class="input-area">
       <textarea id="chat-input" placeholder="返答を入力..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
       <button class="send-btn" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+
+  <!-- GENERATING -->
+  <div id="generating-wrap" class="card fade-in">
+    <div class="generating-inner">
+      <div class="generating-icon">⚙️</div>
+      <div class="generating-text">レビューを生成中...</div>
+      <div class="generating-sub">下書きをもとにClaudeが整えています</div>
     </div>
   </div>
 
@@ -388,10 +495,23 @@ const SYSTEM_PROMPT = `あなたは読書レビューを書くのを手伝うフ
 
 会話中は通常のテキストで返答し、レビュー生成時のみJSONを返すこと。`;
 
+const DRAFT_SYSTEM_PROMPT = `あなたは読書レビューを書くのを手伝うAIです。
+ユーザーが本のタイトル・著者名と箇条書きのメモを送ります。
+そのメモを元に、note投稿用の読書レビューを書いてください。
+
+## 出力ルール
+- 400〜600字の自然な日本語
+- note.comに投稿しやすい読みやすい文体
+- 箇条書きのメモやコメントの意図を汲んで、自然な文章に整える
+- タイトルはメモから正確に読み取る
+- 以下のJSONのみを返す（他のテキスト一切なし）:
+{"type":"review","title":"本のタイトル","body":"レビュー本文"}`;
+
 let imageBase64 = null;
 let imageMediaType = null;
 let imagePreview = null;
 let apiHistory = [];
+let currentMode = 'chat';
 
 // 起動時にAPIキー確認
 window.addEventListener('load', () => {
@@ -402,6 +522,43 @@ window.addEventListener('load', () => {
     document.getElementById('apikey-wrap').style.display = 'block';
   }
 });
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-chat-btn').classList.toggle('active', mode === 'chat');
+  document.getElementById('mode-draft-btn').classList.toggle('active', mode === 'draft');
+  document.getElementById('chat-mode-ui').style.display = mode === 'chat' ? 'block' : 'none';
+  document.getElementById('draft-mode-ui').style.display = mode === 'draft' ? 'block' : 'none';
+}
+
+function updateDraftBtn() {
+  const text = document.getElementById('draft-textarea').value.trim();
+  const btn = document.getElementById('draft-btn');
+  btn.classList.toggle('active', text.length > 0);
+}
+
+async function startDraftReview() {
+  const draft = document.getElementById('draft-textarea').value.trim();
+  if (!draft) return;
+
+  document.getElementById('upload-wrap').style.display = 'none';
+  document.getElementById('generating-wrap').style.display = 'block';
+
+  try {
+    const response = await callClaudeWithSystem(DRAFT_SYSTEM_PROMPT, [
+      { role: 'user', content: draft }
+    ]);
+    const parsed = JSON.parse(response.replace(/```json|```/g, '').trim());
+    if (parsed.type === 'review') {
+      document.getElementById('generating-wrap').style.display = 'none';
+      showReview(parsed.body);
+    }
+  } catch (err) {
+    document.getElementById('generating-wrap').style.display = 'none';
+    document.getElementById('upload-wrap').style.display = 'block';
+    alert(`エラーが発生しました: ${err.message}`);
+  }
+}
 
 function saveApiKey() {
   const key = document.getElementById('apikey-input').value.trim();
@@ -483,7 +640,7 @@ function updateStartBtn() {
   btn.classList.toggle('active', !!hasInput);
 }
 
-async function callClaude(messages) {
+async function callClaudeWithSystem(systemPrompt, messages) {
   const apiKey = localStorage.getItem('anthropic_api_key');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -494,15 +651,19 @@ async function callClaude(messages) {
       'x-api-key': apiKey,
     },
     body: JSON.stringify({
-      model: 'claude-opus-4-5',
+      model: 'claude-opus-4-6',
       max_tokens: 1000,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages,
     }),
   });
   if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
   return data.content?.map(b => b.text || '').join('') || '';
+}
+
+async function callClaude(messages) {
+  return callClaudeWithSystem(SYSTEM_PROMPT, messages);
 }
 
 function addMessage(role, text) {
@@ -633,6 +794,7 @@ function autoResize(el) {
 
 function showReview(body) {
   document.getElementById('chat-wrap').style.display = 'none';
+  document.getElementById('generating-wrap').style.display = 'none';
   const reviewWrap = document.getElementById('review-wrap');
   reviewWrap.style.display = 'block';
   reviewWrap.classList.add('fade-in');
@@ -658,12 +820,16 @@ function resetApp() {
   document.getElementById('upload-wrap').style.display = 'block';
   document.getElementById('chat-wrap').style.display = 'none';
   document.getElementById('review-wrap').style.display = 'none';
+  document.getElementById('generating-wrap').style.display = 'none';
   document.getElementById('chat-messages').innerHTML = '';
   document.getElementById('book-title-input').value = '';
+  document.getElementById('draft-textarea').value = '';
   document.getElementById('preview-img').style.display = 'none';
   document.getElementById('drop-placeholder').style.display = 'block';
   document.getElementById('file-input').value = '';
   updateStartBtn();
+  updateDraftBtn();
+  setMode('chat');
 }
 </script>
 </body>
