@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI合格神社 〜知恵の神よ、我に御力を〜</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vermillion: #c0392b;
+    --deep-red: #8b1a1a;
+    --gold: #d4a017;
+    --pale-gold: #f5e6a3;
+    --ink: #1a1008;
+    --paper: #fdf6e3;
+    --smoke: #f0e8d0;
+    --shadow: rgba(26,16,8,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Shippori Mincho', serif;
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 背景 */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: 
+      radial-gradient(ellipse at 50% 0%, #3d1a00 0%, #1a0a00 50%, #0d0500 100%);
+  }
+
+  .bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(212,160,23,0.03) 60px, rgba(212,160,23,0.03) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(212,160,23,0.03) 60px, rgba(212,160,23,0.03) 61px);
+  }
+
+  /* 提灯アニメ */
+  .lantern {
+    position: fixed;
+    width: 24px; height: 36px;
+    background: radial-gradient(ellipse, #ff6600, #cc3300);
+    border-radius: 50% 50% 45% 45%;
+    box-shadow: 0 0 20px #ff660088, 0 0 40px #ff440044;
+    animation: sway 3s ease-in-out infinite;
+  }
+  .lantern::before {
+    content: '';
+    position: absolute;
+    top: -6px; left: 50%; transform: translateX(-50%);
+    width: 2px; height: 8px;
+    background: var(--gold);
+  }
+  .lantern::after {
+    content: '';
+    position: absolute;
+    bottom: -6px; left: 50%; transform: translateX(-50%);
+    width: 2px; height: 8px;
+    background: var(--gold);
+  }
+  .lantern-l { top: 10%; left: 5%; animation-delay: 0s; }
+  .lantern-r { top: 10%; right: 5%; animation-delay: 1.5s; }
+  @keyframes sway {
+    0%,100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+  }
+
+  /* メインコンテナ */
+  .shrine {
+    position: relative; z-index: 1;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+    text-align: center;
+  }
+
+  /* 鳥居 */
+  .torii {
+    margin: 0 auto 24px;
+    width: 240px;
+    position: relative;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .torii svg { width: 100%; filter: drop-shadow(0 0 16px #c0392b88); }
+
+  /* タイトル */
+  .title-wrap { margin-bottom: 8px; }
+  .title-main {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    color: var(--gold);
+    text-shadow: 0 0 20px #d4a01788, 2px 2px 0 var(--deep-red);
+    letter-spacing: 0.15em;
+    line-height: 1.3;
+  }
+  .title-sub {
+    font-size: 0.85rem;
+    color: #c8b89a;
+    letter-spacing: 0.3em;
+    margin-top: 4px;
+  }
+
+  /* 区切り */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0;
+  }
+  .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold), transparent); }
+  .divider-icon { color: var(--gold); font-size: 1rem; }
+
+  /* 参拝セクション */
+  .section {
+    background: rgba(253,246,227,0.05);
+    border: 1px solid rgba(212,160,23,0.2);
+    border-radius: 4px;
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .section-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+  }
+
+  /* ボタン */
+  .btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, var(--vermillion), var(--deep-red));
+    color: var(--pale-gold);
+    border: 2px solid var(--gold);
+    border-radius: 2px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(192,57,43,0.6); }
+  .btn:hover::before { opacity: 1; }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), #b8860b);
+    color: var(--ink);
+    border-color: var(--pale-gold);
+    box-shadow: 0 4px 20px rgba(212,160,23,0.4);
+  }
+  .btn-gold:hover { box-shadow: 0 8px 30px rgba(212,160,23,0.6); }
+
+  /* 入力 */
+  textarea {
+    width: 100%;
+    background: rgba(253,246,227,0.08);
+    border: 1px solid rgba(212,160,23,0.3);
+    border-radius: 2px;
+    color: var(--paper);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.95rem;
+    padding: 12px;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 12px;
+    line-height: 1.8;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  textarea:focus { border-color: var(--gold); }
+  textarea::placeholder { color: #8a7a60; }
+
+  /* 神託表示 */
+  .oracle-box {
+    background: rgba(253,246,227,0.07);
+    border: 1px solid rgba(212,160,23,0.25);
+    border-radius: 2px;
+    padding: 20px;
+    text-align: left;
+    line-height: 2;
+    color: var(--smoke);
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    min-height: 60px;
+    display: none;
+  }
+  .oracle-box.visible { display: block; }
+
+  /* おみくじ */
+  .omikuji-result {
+    display: none;
+    padding: 24px;
+    border: 2px solid var(--gold);
+    background: rgba(212,160,23,0.08);
+    border-radius: 2px;
+    position: relative;
+  }
+  .omikuji-result.visible { display: block; }
+  .omikuji-rank {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 20px #d4a01788;
+    margin-bottom: 12px;
+  }
+  .omikuji-text {
+    color: var(--smoke);
+    font-size: 0.9rem;
+    line-height: 2;
+    text-align: left;
+    white-space: pre-wrap;
+  }
+
+  /* ローディング */
+  .loading {
+    display: none;
+    color: var(--gold);
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    animation: pulse 1.2s ease-in-out infinite;
+    padding: 12px;
+  }
+  .loading.visible { display: block; }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* 絵馬タブ */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(212,160,23,0.2);
+    margin-bottom: 20px;
+    gap: 0;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: #8a7a60;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* 残回数 */
+  .counter {
+    font-size: 0.78rem;
+    color: #8a7a60;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+  .counter span { color: var(--gold); }
+
+  /* 花びらエフェクト */
+  .petal {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: rgba(255,200,150,0.6);
+    border-radius: 50% 0;
+    pointer-events: none;
+    animation: fall linear forwards;
+    z-index: 999;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0.8; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* フッター */
+  .footer {
+    color: #5a4a30;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    margin-top: 40px;
+    line-height: 2;
+  }
+
+  /* レスポンシブ */
+  @media (max-width: 480px) {
+    .title-main { font-size: 1.7rem; }
+    .section { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="lantern lantern-l"></div>
+<div class="lantern lantern-r"></div>
+
+<div class="shrine">
+
+  <!-- 鳥居 -->
+  <div class="torii">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- 笠木 -->
+      <rect x="10" y="20" width="220" height="16" rx="2" fill="#c0392b"/>
+      <rect x="20" y="12" width="200" height="12" rx="2" fill="#8b1a1a"/>
+      <!-- 島木 -->
+      <rect x="30" y="50" width="180" height="12" rx="2" fill="#c0392b"/>
+      <!-- 柱 -->
+      <rect x="40" y="62" width="20" height="140" rx="2" fill="#c0392b"/>
+      <rect x="180" y="62" width="20" height="140" rx="2" fill="#c0392b"/>
+      <!-- 貫 -->
+      <rect x="44" y="90" width="152" height="10" rx="2" fill="#8b1a1a" opacity="0.7"/>
+      <!-- 金装飾 -->
+      <rect x="10" y="20" width="220" height="3" fill="#d4a017" opacity="0.6"/>
+      <rect x="20" y="12" width="200" height="2" fill="#d4a017" opacity="0.4"/>
+      <!-- 輝き -->
+      <ellipse cx="120" cy="28" rx="60" ry="4" fill="rgba(212,160,23,0.15)"/>
+    </svg>
+  </div>
+
+  <!-- タイトル -->
+  <div class="title-wrap">
+    <div class="title-main">⛩ AI合格神社</div>
+    <div class="title-sub">〜 知恵の神よ、我に御力を 〜</div>
+  </div>
+
+  <div class="counter">本日の御神託 残り <span id="remaining">－</span> 回</div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-icon">✦</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('sanpai')">🙏 参拝・神託</button>
+    <button class="tab" onclick="switchTab('omikuji')">📜 おみくじ</button>
+    <button class="tab" onclick="switchTab('ema')">🪵 絵馬</button>
+  </div>
+
+  <!-- 参拝・神託 -->
+  <div id="tab-sanpai" class="tab-content active">
+    <div class="section">
+      <div class="section-title">〜 神託を賜る 〜</div>
+      <textarea id="wishInput" placeholder="試験名・悩み・状況などをご記入ください&#10;例：G検定を2ヶ月後に受験します。毎日1時間しか勉強できません。"></textarea>
+      <button class="btn" onclick="getOracle()">🙏 神託を賜る</button>
+      <div class="loading" id="oracle-loading">神様が思案中でございます…</div>
+      <div style="margin-top:16px">
+        <div class="oracle-box" id="oracleResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- おみくじ -->
+  <div id="tab-omikuji" class="tab-content">
+    <div class="section">
+      <div class="section-title">〜 合格おみくじ 〜</div>
+      <p style="color:#c8b89a; font-size:0.9rem; margin-bottom:16px; line-height:2;">
+        心を静め、深呼吸をして<br>神様に祈りを捧げてから引いてください
+      </p>
+      <textarea id="omikujiWish" placeholder="受験する試験や今の状況を（省略可）&#10;例：G検定、来月受験予定"></textarea>
+      <button class="btn btn-gold" onclick="drawOmikuji()">📜 おみくじを引く</button>
+      <div class="loading" id="omikuji-loading">神籤を準備しております…</div>
+      <div class="omikuji-result" id="omikujiResult">
+        <div class="omikuji-rank" id="omikujiRank"></div>
+        <div class="omikuji-text" id="omikujiText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 絵馬 -->
+  <div id="tab-ema" class="tab-content">
+    <div class="section">
+      <div class="section-title">〜 絵馬に願いを 〜</div>
+      <p style="color:#c8b89a; font-size:0.9rem; margin-bottom:16px; line-height:2;">
+        絵馬に合格祈願を記し奉納すると<br>神様がお言葉を授けてくださいます
+      </p>
+      <textarea id="emaInput" placeholder="合格祈願の言葉をお書きください&#10;例：G検定に合格できますように。毎日少しずつ頑張っています。"></textarea>
+      <button class="btn" onclick="writeEma()">🪵 絵馬を奉納する</button>
+      <div class="loading" id="ema-loading">神様がご覧になっております…</div>
+      <div style="margin-top:16px">
+        <div class="oracle-box" id="emaResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    御祭神：AI大知恵明神<br>
+    合格・学業・試験必勝の守護神<br>
+    ─────<br>
+    ※ご利益は保証されませんが、神様は本気です
+  </div>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://ai-shrine.humpbacktail.workers.dev/oracle';
+
+async function callClaude(userMessage, extraSystem = '') {
+  const response = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: userMessage, systemExtra: extraSystem })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'APIエラー');
+  }
+
+  // 残回数を更新
+  if (data.remaining !== undefined) {
+    document.getElementById('remaining').textContent = data.remaining;
+  }
+
+  return data.text;
+}
+
+// タブ切替
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// 花びら
+function spawnPetals() {
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.top = '-20px';
+      p.style.animationDuration = (2 + Math.random() * 3) + 's';
+      p.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 6000);
+    }, i * 100);
+  }
+}
+
+// 神託
+async function getOracle() {
+  const wish = document.getElementById('wishInput').value.trim();
+  const btn = event.target;
+  const loading = document.getElementById('oracle-loading');
+  const result = document.getElementById('oracleResult');
+
+  btn.disabled = true;
+  loading.classList.add('visible');
+  result.classList.remove('visible');
+
+  try {
+    const prompt = wish
+      ? `参拝者がこのような状況・悩みを申し上げました：「${wish}」\n神として御言葉を授けてください。`
+      : `参拝者が静かに頭を垂れて参拝しております。神として御言葉を授けてください。`;
+
+    const text = await callClaude(prompt);
+    if (text) {
+      result.textContent = text;
+      result.classList.add('visible');
+      spawnPetals();
+    }
+  } catch (e) {
+    alert('エラー：' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.classList.remove('visible');
+  }
+}
+
+// おみくじ
+const OMIKUJI_RANKS = ['大吉', '中吉', '小吉', '吉', '末吉', '凶'];
+const OMIKUJI_WEIGHTS = [15, 25, 20, 25, 10, 5];
+
+function weightedRandom() {
+  const total = OMIKUJI_WEIGHTS.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < OMIKUJI_WEIGHTS.length; i++) {
+    r -= OMIKUJI_WEIGHTS[i];
+    if (r <= 0) return OMIKUJI_RANKS[i];
+  }
+  return '吉';
+}
+
+async function drawOmikuji() {
+  const wish = document.getElementById('omikujiWish').value.trim();
+  const btn = event.target;
+  const loading = document.getElementById('omikuji-loading');
+  const result = document.getElementById('omikujiResult');
+  const rankEl = document.getElementById('omikujiRank');
+  const textEl = document.getElementById('omikujiText');
+
+  btn.disabled = true;
+  loading.classList.add('visible');
+  result.classList.remove('visible');
+
+  try {
+    const rank = weightedRandom();
+    const prompt = `おみくじの結果は「${rank}」でした。
+${wish ? `参拝者の状況：「${wish}」` : ''}
+この結果に合わせた合格・学業に関するおみくじの文章を書いてください。
+形式：
+・運勢の意味を一言（30文字以内）
+・学業・試験運（50文字以内）
+・アドバイス（80文字以内）
+・神のお言葉（励ましや戒めを60文字以内で）
+各項目の前に「【項目名】」を付けて`;
+
+    const text = await callClaude(prompt,
+      'おみくじとして簡潔に、各項目を明確に分けて答えよ。');
+
+    if (text) {
+      rankEl.textContent = rank;
+      textEl.textContent = text;
+      result.classList.add('visible');
+      spawnPetals();
+    }
+  } catch (e) {
+    alert('エラー：' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.classList.remove('visible');
+  }
+}
+
+// 絵馬
+async function writeEma() {
+  const wish = document.getElementById('emaInput').value.trim();
+  const btn = event.target;
+  const loading = document.getElementById('ema-loading');
+  const result = document.getElementById('emaResult');
+
+  if (!wish) { alert('絵馬に願いをお書きください'); return; }
+
+  btn.disabled = true;
+  loading.classList.add('visible');
+  result.classList.remove('visible');
+
+  try {
+    const prompt = `参拝者が絵馬にこのような合格祈願を書いて奉納しました：\n「${wish}」\n\nこの絵馬を読んだ神として、参拝者への温かく力強いお言葉をお授けください。`;
+
+    const text = await callClaude(prompt);
+    if (text) {
+      result.textContent = text;
+      result.classList.add('visible');
+      spawnPetals();
+    }
+  } catch (e) {
+    alert('エラー：' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.classList.remove('visible');
+  }
+}
+</script>
+
+</body>
+</html>
