@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G検定クイズ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>G検定クイズ</h1>
+      <p>通勤時間で合格を目指そう</p>
+    </header>
+
+    <!-- スタート画面 -->
+    <div id="start-screen" class="card">
+      <h2>クイズを始めよう</h2>
+      <p>
+        G検定シラバスに沿った問題に答えて実力を試しましょう。<br>
+        全問終了後にスコアと解説が確認できます。
+      </p>
+      <button id="start-btn" onclick="startQuiz()">スタート</button>
+    </div>
+
+    <!-- クイズ画面 -->
+    <div id="quiz-screen">
+      <div id="progress-area">
+        <div id="progress-text">
+          <span id="progress-current">1 / 10</span>
+          <span id="progress-category"></span>
+        </div>
+        <div id="progress-bar-wrap">
+          <div id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="category-badge"></div>
+        <p id="question-text"></p>
+        <div id="choices"></div>
+
+        <div id="explanation-area">
+          <p id="result-badge"></p>
+          <p id="explanation-text"></p>
+        </div>
+      </div>
+
+      <button id="next-btn" onclick="nextQuestion()">次の問題へ →</button>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-screen" class="card">
+      <h2>結果発表</h2>
+      <div id="score-display"></div>
+      <div id="score-label"></div>
+      <p id="score-message"></p>
+      <button id="retry-btn" onclick="startQuiz()">もう一度チャレンジ</button>
+    </div>
+  </div>
+
+  <script>
+    let questions = [];
+    let currentSet = [];
+    let currentIndex = 0;
+    let score = 0;
+    const QUIZ_COUNT = 10;
+
+    async function loadQuestions() {
+      const res = await fetch('questions.json');
+      questions = await res.json();
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    async function startQuiz() {
+      if (questions.length === 0) await loadQuestions();
+      currentSet = shuffle(questions).slice(0, Math.min(QUIZ_COUNT, questions.length));
+      currentIndex = 0;
+      score = 0;
+
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'none';
+      document.getElementById('quiz-screen').style.display = 'block';
+
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = currentSet[currentIndex];
+      const total = currentSet.length;
+
+      // 進捗
+      document.getElementById('progress-current').textContent = `${currentIndex + 1} / ${total}`;
+      document.getElementById('progress-category').textContent = q.category;
+      document.getElementById('progress-bar').style.width = `${(currentIndex / total) * 100}%`;
+
+      // 問題
+      document.getElementById('category-badge').textContent = q.category;
+      document.getElementById('question-text').textContent = q.question;
+
+      // 選択肢（シャッフル）
+      const indices = shuffle([0, 1, 2, 3]);
+      const choicesEl = document.getElementById('choices');
+      choicesEl.innerHTML = '';
+      indices.forEach(i => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = q.choices[i];
+        btn.dataset.index = i;
+        btn.onclick = () => selectAnswer(i, q.answer, q.explanation);
+        choicesEl.appendChild(btn);
+      });
+
+      // リセット
+      document.getElementById('explanation-area').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function selectAnswer(selected, correct, explanation) {
+      const buttons = document.querySelectorAll('.choice-btn');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        const idx = parseInt(btn.dataset.index);
+        if (idx === correct) btn.classList.add('correct');
+        else if (idx === selected) btn.classList.add('wrong');
+      });
+
+      const isCorrect = selected === correct;
+      if (isCorrect) score++;
+
+      const badge = document.getElementById('result-badge');
+      badge.textContent = isCorrect ? '⭕ 正解！' : '❌ 不正解';
+      badge.className = isCorrect ? 'correct' : 'wrong';
+
+      document.getElementById('explanation-text').textContent = explanation;
+      document.getElementById('explanation-area').style.display = 'block';
+      document.getElementById('next-btn').style.display = 'block';
+
+      if (currentIndex === currentSet.length - 1) {
+        document.getElementById('next-btn').textContent = '結果を見る';
+      } else {
+        document.getElementById('next-btn').textContent = '次の問題へ →';
+      }
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex >= currentSet.length) {
+        showResult();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showResult() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      const screen = document.getElementById('result-screen');
+      screen.style.display = 'block';
+
+      const total = currentSet.length;
+      const pct = Math.round((score / total) * 100);
+      document.getElementById('score-display').textContent = `${score} / ${total}`;
+      document.getElementById('score-label').textContent = `正解率 ${pct}%`;
+
+      let msg = '';
+      if (pct >= 90) msg = '素晴らしい！ほぼ完璧です。本番でも自信を持って臨めます。';
+      else if (pct >= 70) msg = 'よくできました！苦手な分野を重点的に復習しましょう。';
+      else if (pct >= 50) msg = 'まだ伸びしろがあります。解説を読んで理解を深めましょう。';
+      else msg = '基礎から見直してみましょう。繰り返し挑戦することが大切です。';
+
+      document.getElementById('score-message').textContent = msg;
+    }
+  </script>
+</body>
+</html>
