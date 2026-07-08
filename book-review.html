@@ -671,7 +671,7 @@ async function callClaudeWithSystem(systemPrompt, messages) {
     },
     body: JSON.stringify({
       model: 'claude-opus-4-6',
-      max_tokens: 1000,
+      max_tokens: 5000,
       system: systemPrompt,
       messages,
     }),
